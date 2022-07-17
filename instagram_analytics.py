@@ -83,26 +83,26 @@ class InstagramCrawler:
                 batch = usernames_processes[:batch_size]
             else:
                 batch = usernames_processes
-                usernames_processes = None
+                usernames_processes = False
             
             for process in batch:
                 print(f'Starting {process}')
                 process.start()
-                usernames_processes.remove(process)
+                if usernames_processes is not False:
+                    usernames_processes.remove(process)
             
             for process in batch:
-                print(f'waiting for {process} to end')
-                process.join()
-                print(f'{process} has ended, continuing')
+                map(lambda x: x.join(), batch)
             
             batch = None
 
 if __name__ == '__main__':
     instagram_crawler = InstagramCrawler('analytics9155', 'Bossic26')
     #instagram_crawler.write_files(['luke.m.monson'], 10)
+
     with open(r'C:\Users\ahuma\Desktop\python projects\Misc Projects\instagram-analytics\user_followers\luke.m.monson_FOLLOWERS.json', 'r') as f:
         users = json.loads(f.read())
-    instagram_crawler.write_files(users, 4) 
+    instagram_crawler.write_files(users, 6) 
 
 
 
