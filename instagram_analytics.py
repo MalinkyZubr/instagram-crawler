@@ -9,6 +9,7 @@ import os
 import json
 import multiprocessing
 import time
+import getpass
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -97,7 +98,9 @@ class InstagramCrawler:
             batch = None
 
 if __name__ == '__main__':
-    instagram_crawler = InstagramCrawler('analytics9155', 'Bossic26')
+    username = str(input("enter username: "))
+    password = getpass.getpass(prompt='Password: ', stream=None)
+    instagram_crawler = InstagramCrawler(username, password)
     #instagram_crawler.write_files(['luke.m.monson'], 10)
 
     with open(r'C:\Users\ahuma\Desktop\python projects\Misc Projects\instagram-analytics\user_followers\luke.m.monson_FOLLOWERS.json', 'r') as f:
