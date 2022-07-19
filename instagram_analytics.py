@@ -1,10 +1,4 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-from py2neo import Graph
 import instaloader
-import csv
 import os
 import json
 import multiprocessing
@@ -28,19 +22,17 @@ class InstagramCrawler:
                                 'is_verified':profile.is_verified,
                                 'media_count':profile.mediacount,
                                 'num_followers':profile.followers,
-                                'num_following':profile.followees,
-                                'followers':'NaN',
-                                'following':'NaN'}
+                                'num_following':profile.followees}
   
         # create generator objects for follower and followee list
         if not profile_information['is_private']:
             followers_unprocessed = profile.get_followers()
             followees_unprocessed = profile.get_followees()
 
-            profile_information['followers'] = (user.username for user in followers_unprocessed)
-            profile_information['following'] = (user.username for user in followees_unprocessed)
+            followers = (user.username for user in followers_unprocessed)
+            following = (user.username for user in followees_unprocessed)
 
-        return profile_information
+        return (profile_information, followers, following)
 
     def retrieve_follow_information(self, followers, following):
         followers = [user for user in followers]
@@ -52,26 +44,16 @@ class InstagramCrawler:
         json_content = json.dumps(contents)
         with open(file_name, 'w') as f:
             f.write(json_content)
-
-    def write_csv(self, file_name, contents: dict):
-        contents.pop('followers')
-        contents.pop('following')
-        with open(file_name, 'w') as f:
-            fieldnames = list(contents.keys())
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-
-            writer.writeheader()
-            writer.writerow(contents)
-
+            
     def write_file(self, username):
-        user_information_file = os.path.join(r'instagram-analytics\user_information', f'{username}_INFO.csv') 
+        user_information_file = os.path.join(r'instagram-analytics\user_information', f'{username}_INFO.json') 
         user_followers_file = os.path.join(r'instagram-analytics\user_followers', f'{username}_FOLLOWERS.json')
         user_following_file = os.path.join(r'instagram-analytics\user_following', f'{username}_FOLLOWING.json')
 
-        info = self.get_account_information(username)
-        followers, following = self.retrieve_follow_information(info['followers'], info['following'])
+        info, followers_unprocessed, following_unprocessed = self.get_account_information(username)
+        followers, following = self.retrieve_follow_information(followers_unprocessed, following_unprocessed)
 
-        self.write_csv(user_information_file, info)
+        self.write_json(user_information_file, info)
         self.write_json(user_followers_file, followers)
         self.write_json(user_following_file, following)
 
@@ -105,7 +87,7 @@ if __name__ == '__main__':
 
     with open(r'C:\Users\ahuma\Desktop\python projects\Misc Projects\instagram-analytics\user_followers\luke.m.monson_FOLLOWERS.json', 'r') as f:
         users = json.loads(f.read())
-    instagram_crawler.write_files(users, 6) 
+    instagram_crawler.write_files(users, 1) 
 
 
 
